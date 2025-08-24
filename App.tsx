@@ -1,6 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, ScrollView } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, FlatList } from 'react-native';
+import FormView from './components/FormView';
+
+type ItemType = {
+  index: number;
+  item: string;
+}
+
 
 const App = () => {
   const [newFish, setFish] = useState<string>('')
@@ -10,15 +17,43 @@ const App = () => {
     setFish(enteredText)
   }
 
+  const keyHandler = (item: string, index: number) => {
+    return index.toString()
+  }
+
   const addFishToList = () => {
     // const newList = fishList.concat(newFish)
     // addFish(newList)
     addFish(fishList => [...fishList, newFish])
     setFish('')
   }
+
+  const logPressEvent = (par1, par2) => {
+    console.log(par1 + ": " + par2)
+  }
+
+  const deleteItem = (removeIndex: number) => {
+    addFish(fishList => {
+      return fishList.filter((fish, id) => {
+        console.log("remove=" + removeIndex + " fishId=" + id)
+        return id != removeIndex
+      })
+    })
+  }
+
+  const renderFish = (item: ItemType) => {
+    return (
+      <TouchableOpacity activeOpacity={0.8} onLongPress={() => deleteItem(item.index)}>
+        <View style={styles.listItemStyle}>
+          <Text>{item.index} {item.item}</Text>
+        </View>
+      </TouchableOpacity>
+    )
+  }
   return (
     <View style={styles.container}>
-      <View style={styles.formView}>
+      <FormView onFishInput={fishInputHandler} onAddFish={addFishToList} />
+      {/* <View style={styles.formView}>
         <TextInput placeholder="Fish name" style={styles.inputStyle}
           onChangeText={fishInputHandler}
           value={newFish}
@@ -27,20 +62,20 @@ const App = () => {
           <Button title='Click' onPress={addFishToList}></Button>
         </View>
         <StatusBar style='auto' />
-      </View>
+      </View> */}
       <View style={styles.listStyle}>
-        <ScrollView style={styles.scrollviewstyle}>
-          {fishList.map((item, index) => {
-            return <View style={styles.listItemStyle} key={index}><Text>{index}: {item}</Text></View>
-          })}
-        </ScrollView>
+        <FlatList style={styles.flatliststyle}
+          data={fishList}
+          keyExtractor={keyHandler}
+          renderItem={renderFish}
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollviewstyle: {
+  flatliststyle: {
     width: '80%',
     backgroundColor: 'blue',
   },
